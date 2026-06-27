@@ -24,7 +24,13 @@ Namespace RentalPS.WinForms.UI
             BackColor = AppTheme.Surface
             Font = New Font("Segoe UI", 9.0F)
             BuildLayout()
-            LoadCustomers()
+
+            If DesignModeHelper.IsDesignMode() Then
+                _statusLabel.ForeColor = AppTheme.TextMuted
+                _statusLabel.Text = "Preview designer. Data pelanggan muncul saat aplikasi dijalankan."
+            Else
+                LoadCustomers()
+            End If
         End Sub
 
         Private Sub BuildLayout()
@@ -147,6 +153,10 @@ Namespace RentalPS.WinForms.UI
         End Function
 
         Private Sub LoadCustomers()
+            If DesignModeHelper.IsDesignMode() Then
+                Return
+            End If
+
             Try
                 Dim table = _repository.Search(_searchTextBox.Text)
                 _grid.DataSource = table

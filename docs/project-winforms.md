@@ -34,10 +34,10 @@ Project dibuat agar bisa dipakai di VS Code dan tetap bisa dibuka di Visual Stud
 
 ## Koneksi MySQL
 
-Default connection string mengikuti Docker Compose:
+Default connection string saat ini cocok untuk Laragon:
 
 ```text
-Server=localhost;Port=3306;Database=rental_ps;User ID=rental_user;Password=rental_pass;
+Server=localhost;Port=3306;Database=rental_ps;User ID=root;Password=;
 ```
 
 Bisa dioverride dengan environment variable:
@@ -59,3 +59,15 @@ Urutan implementasi yang disarankan:
 5. Pembayaran dan cetak struk.
 6. Service dan isi game.
 7. Laporan.
+
+## Catatan Visual Studio Designer
+
+Form di project ini dibuat lewat kode VB.NET, bukan drag-and-drop Designer. Jadi tampilan utama yang benar dilihat dengan menjalankan aplikasi, bukan hanya membuka file `.vb` di Designer.
+
+Jika Designer terlihat kosong, jalankan aplikasi dengan:
+
+```bash
+dotnet run --project src/RentalPS.WinForms/RentalPS.WinForms.vbproj
+```
+
+Atau dari Visual Studio klik Start.

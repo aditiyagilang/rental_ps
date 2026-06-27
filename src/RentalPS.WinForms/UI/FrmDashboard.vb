@@ -17,7 +17,13 @@ Namespace RentalPS.WinForms.UI
             BackColor = AppTheme.Surface
             Font = New Font("Segoe UI", 9.0F)
             BuildLayout()
-            LoadMetrics()
+
+            If DesignModeHelper.IsDesignMode() Then
+                _statusLabel.ForeColor = AppTheme.TextMuted
+                _statusLabel.Text = "Preview designer. Data dashboard muncul saat aplikasi dijalankan."
+            Else
+                LoadMetrics()
+            End If
         End Sub
 
         Private Sub BuildLayout()

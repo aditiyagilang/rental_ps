@@ -22,8 +22,15 @@ Koneksi default:
 Host: localhost
 Port: 3306
 Database: rental_ps
-User: rental_user
-Password: rental_pass
+User: root
+Password:
+```
+
+Jika memakai Docker Compose bawaan repo ini, ubah koneksi di `DbConnectionFactory.vb` atau set environment variable:
+
+```text
+RENTAL_PS_DB_USER=rental_user
+RENTAL_PS_DB_PASSWORD=rental_pass
 ```
 
 ## Jalankan Aplikasi
@@ -45,3 +52,7 @@ Password: admin
 ```
 
 Password ini hanya untuk tahap awal development. Nanti perlu diganti ke sistem hash password yang benar.
+
+## Form Terlihat Kosong
+
+UI dibuat lewat kode, bukan drag-and-drop Designer. Kalau kamu buka form di Visual Studio Designer dan terlihat kosong, coba jalankan aplikasinya langsung. Tampilan seperti sidebar, dashboard, dan form pelanggan dibuat saat runtime.
