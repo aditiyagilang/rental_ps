@@ -43,6 +43,10 @@ Namespace RentalPS.WinForms.Models
             Return New MasterField(columnName, labelText, MasterFieldKind.DateValue, required)
         End Function
 
+        Public Shared Function DateTimeField(columnName As String, labelText As String, Optional required As Boolean = False) As MasterField
+            Return New MasterField(columnName, labelText, MasterFieldKind.DateTimeValue, required)
+        End Function
+
         Public Shared Function BooleanField(columnName As String, labelText As String) As MasterField
             Return New MasterField(columnName, labelText, MasterFieldKind.BooleanValue, False)
         End Function

@@ -27,10 +27,40 @@ Project dibuat agar bisa dipakai di VS Code dan tetap bisa dibuka di Visual Stud
   - layout utama dengan sidebar.
 - `FrmDashboard`
   - membaca ringkasan dari MySQL.
+  - grafik pendapatan 7 hari.
+  - grafik komposisi transaksi hari ini.
+  - grafik risiko operasional.
 - `FrmCustomers`
   - contoh master data yang sudah CRUD dasar.
+- `FrmMasterData`
+  - form generik untuk master dan transaksi sederhana.
 - `FrmPlaceholder`
   - placeholder untuk modul lain.
+
+## Form Master Aktif
+
+- Pelanggan
+- Stok PS
+- Jenis Ruang
+- Ruang
+- Stok FNB
+- Game
+- Jasa
+- Sparepart
+- Supplier
+
+## Form Transaksi Aktif
+
+- Sewa
+- Booking
+- Denda
+- Isi Game
+- Service
+- Beli Sparepart
+- Jual Sparepart
+- Penjualan FNB
+
+Catatan: form transaksi detail item seperti list game, item FNB, dan item sparepart masih tahap berikutnya. Tahap ini sudah bisa menyimpan data transaksi utama/header ke database.
 
 ## Koneksi MySQL
 
@@ -52,13 +82,11 @@ Bisa dioverride dengan environment variable:
 
 Urutan implementasi yang disarankan:
 
-1. Master ruang, jenis ruang, stok PS.
-2. Master FNB, game, jasa, sparepart.
-3. Transaksi booking.
-4. Transaksi sewa.
-5. Pembayaran dan cetak struk.
-6. Service dan isi game.
-7. Laporan.
+1. Detail item transaksi FNB/sparepart/game.
+2. Auto generate nomor transaksi.
+3. Perhitungan otomatis total sewa/durasi.
+4. Pembayaran dan cetak struk.
+5. Laporan.
 
 ## Catatan Visual Studio Designer
 

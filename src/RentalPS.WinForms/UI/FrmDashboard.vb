@@ -12,6 +12,9 @@ Namespace RentalPS.WinForms.UI
         Private ReadOnly _lowStockLabel As New Label()
         Private ReadOnly _revenueLabel As New Label()
         Private ReadOnly _statusLabel As New Label()
+        Private ReadOnly _revenueChart As New SimpleBarChart()
+        Private ReadOnly _transactionChart As New SimpleDonutChart()
+        Private ReadOnly _stockChart As New SimpleBarChart()
 
         Public Sub New()
             BackColor = AppTheme.Surface
@@ -30,62 +33,84 @@ Namespace RentalPS.WinForms.UI
             Dim root = New TableLayoutPanel With {
                 .Dock = DockStyle.Fill,
                 .ColumnCount = 4,
-                .RowCount = 3,
+                .RowCount = 4,
                 .BackColor = AppTheme.Surface
             }
             root.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 25))
             root.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 25))
             root.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 25))
             root.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 25))
-            root.RowStyles.Add(New RowStyle(SizeType.Absolute, 120))
+            root.RowStyles.Add(New RowStyle(SizeType.Absolute, 112))
             root.RowStyles.Add(New RowStyle(SizeType.Absolute, 16))
-            root.RowStyles.Add(New RowStyle(SizeType.Percent, 100))
+            root.RowStyles.Add(New RowStyle(SizeType.Percent, 56))
+            root.RowStyles.Add(New RowStyle(SizeType.Percent, 44))
 
-            root.Controls.Add(CreateMetricCard("Sewa Berjalan", _runningRentalLabel), 0, 0)
-            root.Controls.Add(CreateMetricCard("Booking Hari Ini", _todayBookingLabel), 1, 0)
-            root.Controls.Add(CreateMetricCard("Stok Menipis", _lowStockLabel), 2, 0)
-            root.Controls.Add(CreateMetricCard("Pendapatan Hari Ini", _revenueLabel), 3, 0)
+            root.Controls.Add(CreateMetricCard("Sewa Berjalan", _runningRentalLabel, AppTheme.Accent), 0, 0)
+            root.Controls.Add(CreateMetricCard("Booking Hari Ini", _todayBookingLabel, AppTheme.Success), 1, 0)
+            root.Controls.Add(CreateMetricCard("Stok Menipis", _lowStockLabel, Color.FromArgb(234, 88, 12)), 2, 0)
+            root.Controls.Add(CreateMetricCard("Pendapatan Hari Ini", _revenueLabel, Color.FromArgb(147, 51, 234)), 3, 0)
 
-            Dim activityPanel = New Panel With {
+            _revenueChart.Dock = DockStyle.Fill
+            _revenueChart.Title = "Pendapatan 7 Hari"
+            _revenueChart.BarColor = AppTheme.Accent
+            _revenueChart.Margin = New Padding(0, 0, 12, 12)
+            root.SetColumnSpan(_revenueChart, 2)
+            root.Controls.Add(_revenueChart, 0, 2)
+
+            _transactionChart.Dock = DockStyle.Fill
+            _transactionChart.Title = "Komposisi Transaksi Hari Ini"
+            _transactionChart.Margin = New Padding(0, 0, 0, 12)
+            root.SetColumnSpan(_transactionChart, 2)
+            root.Controls.Add(_transactionChart, 2, 2)
+
+            _stockChart.Dock = DockStyle.Fill
+            _stockChart.Title = "Risiko Operasional"
+            _stockChart.BarColor = Color.FromArgb(234, 88, 12)
+            _stockChart.Margin = New Padding(0, 0, 12, 0)
+            root.SetColumnSpan(_stockChart, 2)
+            root.Controls.Add(_stockChart, 0, 3)
+
+            Dim summaryPanel = New Panel With {
                 .Dock = DockStyle.Fill,
                 .BackColor = Color.White,
-                .Padding = New Padding(18)
+                .Padding = New Padding(18),
+                .Margin = New Padding(0)
             }
-            root.SetColumnSpan(activityPanel, 4)
+            root.SetColumnSpan(summaryPanel, 2)
 
             Dim title = New Label With {
                 .Dock = DockStyle.Top,
                 .Height = 34,
-                .Text = "Ringkasan Operasional",
+                .Text = "Kontrol Cepat",
                 .Font = New Font("Segoe UI", 12.0F, FontStyle.Bold),
                 .ForeColor = AppTheme.TextDark
             }
 
+            _statusLabel.Dock = DockStyle.Top
+            _statusLabel.Height = 34
+            _statusLabel.ForeColor = AppTheme.TextMuted
+
+            Dim refreshButton = New Button With {.Text = "Refresh Dashboard", .Width = 160, .Dock = DockStyle.Top}
+            AppTheme.StylePrimaryButton(refreshButton)
+            AddHandler refreshButton.Click, Sub(sender, e) LoadMetrics()
+
             Dim body = New Label With {
                 .Dock = DockStyle.Top,
-                .Height = 100,
-                .Text = "Gunakan menu kiri untuk transaksi sewa, booking, service, isi game, dan master data. Dashboard ini sudah membaca data langsung dari MySQL.",
+                .Height = 82,
+                .Text = "Pantau transaksi berjalan, booking hari ini, pendapatan, dan stok bermasalah dari satu layar.",
                 .ForeColor = AppTheme.TextMuted
             }
 
-            _statusLabel.Dock = DockStyle.Top
-            _statusLabel.Height = 32
-            _statusLabel.ForeColor = AppTheme.TextMuted
-
-            Dim refreshButton = New Button With {.Text = "Refresh", .Width = 110, .Dock = DockStyle.Top}
-            AppTheme.StyleSecondaryButton(refreshButton)
-            AddHandler refreshButton.Click, Sub(sender, e) LoadMetrics()
-
-            activityPanel.Controls.Add(refreshButton)
-            activityPanel.Controls.Add(_statusLabel)
-            activityPanel.Controls.Add(body)
-            activityPanel.Controls.Add(title)
-            root.Controls.Add(activityPanel, 0, 2)
+            summaryPanel.Controls.Add(refreshButton)
+            summaryPanel.Controls.Add(_statusLabel)
+            summaryPanel.Controls.Add(body)
+            summaryPanel.Controls.Add(title)
+            root.Controls.Add(summaryPanel, 2, 3)
 
             Controls.Add(root)
         End Sub
 
-        Private Function CreateMetricCard(title As String, valueLabel As Label) As Control
+        Private Function CreateMetricCard(title As String, valueLabel As Label, accentColor As Color) As Control
             Dim panel = New Panel With {
                 .Dock = DockStyle.Fill,
                 .BackColor = Color.White,
@@ -93,9 +118,11 @@ Namespace RentalPS.WinForms.UI
                 .Margin = New Padding(0, 0, 12, 0)
             }
 
+            Dim accent = New Panel With {.Dock = DockStyle.Left, .Width = 5, .BackColor = accentColor}
+
             Dim titleLabel = New Label With {
                 .Dock = DockStyle.Top,
-                .Height = 28,
+                .Height = 26,
                 .Text = title,
                 .ForeColor = AppTheme.TextMuted
             }
@@ -108,6 +135,7 @@ Namespace RentalPS.WinForms.UI
 
             panel.Controls.Add(valueLabel)
             panel.Controls.Add(titleLabel)
+            panel.Controls.Add(accent)
             Return panel
         End Function
 
@@ -117,8 +145,16 @@ Namespace RentalPS.WinForms.UI
                 _todayBookingLabel.Text = _repository.GetMetric("SELECT COUNT(*) FROM bookings WHERE DATE(start_time) = CURRENT_DATE() AND status IN ('booked','checked_in')").ToString()
                 _lowStockLabel.Text = _repository.GetMetric("SELECT (SELECT COUNT(*) FROM fnb_items WHERE stock_qty <= minimum_stock) + (SELECT COUNT(*) FROM spareparts WHERE stock_qty <= minimum_stock)").ToString()
                 _revenueLabel.Text = _repository.GetRevenueToday().ToString("N0")
+
+                _revenueChart.Items = _repository.GetRevenueLast7Days()
+                _transactionChart.Items = _repository.GetTransactionMixToday()
+                _stockChart.Items = _repository.GetStockRisk()
+                _revenueChart.Invalidate()
+                _transactionChart.Invalidate()
+                _stockChart.Invalidate()
+
                 _statusLabel.ForeColor = AppTheme.Success
-                _statusLabel.Text = "Database tersambung."
+                _statusLabel.Text = "Database tersambung. Dashboard diperbarui."
             Catch ex As Exception
                 _statusLabel.ForeColor = AppTheme.Danger
                 _statusLabel.Text = "Gagal membaca dashboard: " & ex.Message

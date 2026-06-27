@@ -27,7 +27,8 @@ Namespace RentalPS.WinForms.UI
                 .Dock = DockStyle.Left,
                 .Width = 230,
                 .BackColor = AppTheme.SidebarBack,
-                .Padding = New Padding(14)
+                .Padding = New Padding(14),
+                .AutoScroll = True
             }
 
             Dim brand = New Label With {
@@ -50,11 +51,14 @@ Namespace RentalPS.WinForms.UI
             sidebar.Controls.Add(CreateMenuButton("Jenis Ruang", Sub() ShowPage("Jenis Ruang", New FrmRoomTypes())))
             sidebar.Controls.Add(CreateMenuButton("Stok PS", Sub() ShowPage("Stok PS", New FrmConsoles())))
             sidebar.Controls.Add(CreateMenuButton("Pelanggan", Sub() ShowPage("Pelanggan", New FrmCustomers())))
-            sidebar.Controls.Add(CreateMenuButton("Service", Sub() ShowPage("Service", New FrmPlaceholder("Transaksi Service"))))
-            sidebar.Controls.Add(CreateMenuButton("Isi Game", Sub() ShowPage("Isi Game", New FrmPlaceholder("Transaksi Isi Game"))))
-            sidebar.Controls.Add(CreateMenuButton("Denda", Sub() ShowPage("Denda", New FrmPlaceholder("Transaksi Denda"))))
-            sidebar.Controls.Add(CreateMenuButton("Booking", Sub() ShowPage("Booking", New FrmPlaceholder("Transaksi Booking"))))
-            sidebar.Controls.Add(CreateMenuButton("Sewa", Sub() ShowPage("Sewa", New FrmPlaceholder("Transaksi Sewa"))))
+            sidebar.Controls.Add(CreateMenuButton("Penjualan FNB", Sub() ShowPage("Penjualan FNB", New FrmFnbSale())))
+            sidebar.Controls.Add(CreateMenuButton("Jual Sparepart", Sub() ShowPage("Jual Sparepart", New FrmSparepartSale())))
+            sidebar.Controls.Add(CreateMenuButton("Beli Sparepart", Sub() ShowPage("Beli Sparepart", New FrmSparepartPurchase())))
+            sidebar.Controls.Add(CreateMenuButton("Service", Sub() ShowPage("Service", New FrmServiceJob())))
+            sidebar.Controls.Add(CreateMenuButton("Isi Game", Sub() ShowPage("Isi Game", New FrmGameInstall())))
+            sidebar.Controls.Add(CreateMenuButton("Denda", Sub() ShowPage("Denda", New FrmFine())))
+            sidebar.Controls.Add(CreateMenuButton("Booking", Sub() ShowPage("Booking", New FrmBooking())))
+            sidebar.Controls.Add(CreateMenuButton("Sewa", Sub() ShowPage("Sewa", New FrmRental())))
             sidebar.Controls.Add(CreateMenuButton("Dashboard", Sub() ShowPage("Dashboard", New FrmDashboard())))
             sidebar.Controls.Add(brand)
 

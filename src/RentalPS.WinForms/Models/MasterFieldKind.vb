@@ -5,6 +5,7 @@ Namespace RentalPS.WinForms.Models
         IntegerNumber
         DecimalNumber
         DateValue
+        DateTimeValue
         BooleanValue
         Combo
         Lookup

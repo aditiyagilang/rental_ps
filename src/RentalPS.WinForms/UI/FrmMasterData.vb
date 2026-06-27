@@ -146,6 +146,8 @@ Namespace RentalPS.WinForms.UI
                     Return New TextBox With {.Height = 28, .PlaceholderText = field.Placeholder}
                 Case MasterFieldKind.DateValue
                     Return New DateTimePicker With {.Height = 28, .Format = DateTimePickerFormat.Short, .ShowCheckBox = Not field.Required}
+                Case MasterFieldKind.DateTimeValue
+                    Return New DateTimePicker With {.Height = 28, .Format = DateTimePickerFormat.Custom, .CustomFormat = "dd/MM/yyyy HH:mm", .ShowCheckBox = Not field.Required}
                 Case MasterFieldKind.BooleanValue
                     Return New CheckBox With {.Height = 28, .Text = "Ya", .Checked = True}
                 Case MasterFieldKind.Combo
@@ -158,7 +160,15 @@ Namespace RentalPS.WinForms.UI
                 Case MasterFieldKind.Lookup
                     Dim combo = New ComboBox With {.Height = 28, .DropDownStyle = ComboBoxStyle.DropDownList}
                     If Not DesignModeHelper.IsDesignMode() Then
-                        combo.DataSource = _repository.LoadLookup(field.LookupSql)
+                        Dim table = _repository.LoadLookup(field.LookupSql)
+                        If Not field.Required Then
+                            Dim row = table.NewRow()
+                            row(field.LookupValueMember) = DBNull.Value
+                            row(field.LookupDisplayMember) = "-"
+                            table.Rows.InsertAt(row, 0)
+                        End If
+
+                        combo.DataSource = table
                         combo.DisplayMember = field.LookupDisplayMember
                         combo.ValueMember = field.LookupValueMember
                     End If
@@ -258,7 +268,7 @@ Namespace RentalPS.WinForms.UI
                     Return combo.SelectedItem.ToString()
                 Case MasterFieldKind.Lookup
                     Dim combo = DirectCast(input, ComboBox)
-                    If combo.SelectedValue Is Nothing Then
+                    If combo.SelectedValue Is Nothing OrElse combo.SelectedValue Is DBNull.Value Then
                         Return DBNull.Value
                     End If
                     Return combo.SelectedValue
@@ -268,6 +278,12 @@ Namespace RentalPS.WinForms.UI
                         Return DBNull.Value
                     End If
                     Return picker.Value.Date
+                Case MasterFieldKind.DateTimeValue
+                    Dim picker = DirectCast(input, DateTimePicker)
+                    If picker.ShowCheckBox AndAlso Not picker.Checked Then
+                        Return DBNull.Value
+                    End If
+                    Return picker.Value
                 Case MasterFieldKind.IntegerNumber
                     Dim text = DirectCast(input, TextBox).Text.Trim()
                     If text = "" Then
@@ -304,7 +320,7 @@ Namespace RentalPS.WinForms.UI
                     DirectCast(input, ComboBox).SelectedItem = value.ToString()
                 Case MasterFieldKind.Lookup
                     DirectCast(input, ComboBox).SelectedValue = value
-                Case MasterFieldKind.DateValue
+                Case MasterFieldKind.DateValue, MasterFieldKind.DateTimeValue
                     Dim picker = DirectCast(input, DateTimePicker)
                     picker.Value = Convert.ToDateTime(value)
                     If picker.ShowCheckBox Then
@@ -339,7 +355,7 @@ Namespace RentalPS.WinForms.UI
                     If combo.Items.Count > 0 Then
                         combo.SelectedIndex = 0
                     End If
-                Case MasterFieldKind.DateValue
+                Case MasterFieldKind.DateValue, MasterFieldKind.DateTimeValue
                     Dim picker = DirectCast(input, DateTimePicker)
                     picker.Value = Date.Today
                     If picker.ShowCheckBox Then
