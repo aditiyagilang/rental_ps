@@ -118,6 +118,18 @@ WHERE id = @id"
             End Using
         End Sub
 
+        Public Sub Delete(id As Long)
+            Using connection = DbConnectionFactory.CreateConnection()
+                connection.Open()
+
+                Const sql = "DELETE FROM rentals WHERE id = @id"
+                Using command = New MySqlCommand(sql, connection)
+                    command.Parameters.AddWithValue("@id", id)
+                    command.ExecuteNonQuery()
+                End Using
+            End Using
+        End Sub
+
         Private Shared Sub AddParameters(command As MySqlCommand, values As RentalValues)
             command.Parameters.AddWithValue("@rental_no", values.RentalNo)
             command.Parameters.AddWithValue("@booking_id", NullIfZero(values.BookingId))

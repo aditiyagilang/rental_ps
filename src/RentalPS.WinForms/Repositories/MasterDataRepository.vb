@@ -76,6 +76,18 @@ Namespace RentalPS.WinForms.Repositories
             End Using
         End Sub
 
+        Public Sub Delete(config As MasterFormConfig, id As Long)
+            Using connection = DbConnectionFactory.CreateConnection()
+                connection.Open()
+
+                Dim sql = $"DELETE FROM {QuoteName(config.TableName)} WHERE id = @id"
+                Using command = New MySqlCommand(sql, connection)
+                    command.Parameters.AddWithValue("@id", id)
+                    command.ExecuteNonQuery()
+                End Using
+            End Using
+        End Sub
+
         Private Shared Sub AddParameters(command As MySqlCommand, config As MasterFormConfig, values As Dictionary(Of String, Object))
             For Each field In config.Fields
                 If values.ContainsKey(field.ColumnName) Then

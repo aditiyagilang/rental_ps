@@ -1,5 +1,6 @@
 Imports System.Drawing
 Imports System.Windows.Forms
+Imports RentalPS.WinForms.Infrastructure
 Imports RentalPS.WinForms.Repositories
 
 Namespace RentalPS.WinForms.UI
@@ -113,17 +114,20 @@ Namespace RentalPS.WinForms.UI
                     Return
                 End If
 
-                If username <> "admin" OrElse password <> "admin" Then
+                If Not _userRepository.ValidateLogin(username, password) Then
                     _statusLabel.ForeColor = AppTheme.Danger
-                    _statusLabel.Text = "Untuk versi awal, pakai admin / admin."
+                    _statusLabel.Text = "Password salah."
                     Return
                 End If
+
+                AppSession.Start(username, _userRepository.IsInRole(username, "admin"))
 
                 Hide()
                 Using mainForm = New FrmMain(username)
                     mainForm.ShowDialog(Me)
 
                     If mainForm.IsLogoutRequested Then
+                        AppSession.Clear()
                         _passwordTextBox.Clear()
                         _statusLabel.ForeColor = AppTheme.TextMuted
                         _statusLabel.Text = "Silakan login kembali."

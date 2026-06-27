@@ -523,8 +523,8 @@ INSERT INTO roles (name, description) VALUES
 ('owner', 'Laporan dan monitoring');
 
 INSERT INTO users (username, password_hash, full_name) VALUES
-('admin', '$2y$10$replace_with_real_hash_before_production', 'Administrator'),
-('kasir', '$2y$10$replace_with_real_hash_before_production', 'Kasir Rental');
+('admin', 'admin', 'Administrator'),
+('kasir', 'kasir', 'Kasir Rental');
 
 INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id

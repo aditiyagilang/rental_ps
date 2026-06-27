@@ -78,6 +78,18 @@ WHERE id = @id"
             End Using
         End Sub
 
+        Public Sub Delete(id As Long)
+            Using connection = DbConnectionFactory.CreateConnection()
+                connection.Open()
+
+                Const sql = "DELETE FROM customers WHERE id = @id"
+                Using command = New MySqlCommand(sql, connection)
+                    command.Parameters.AddWithValue("@id", id)
+                    command.ExecuteNonQuery()
+                End Using
+            End Using
+        End Sub
+
         Private Shared Function NullIfBlank(value As String) As Object
             If String.IsNullOrWhiteSpace(value) Then
                 Return DBNull.Value

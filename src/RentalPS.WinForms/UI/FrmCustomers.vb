@@ -1,6 +1,7 @@
 Imports System.Data
 Imports System.Drawing
 Imports System.Windows.Forms
+Imports RentalPS.WinForms.Infrastructure
 Imports RentalPS.WinForms.Repositories
 
 Namespace RentalPS.WinForms.UI
@@ -105,11 +106,19 @@ Namespace RentalPS.WinForms.UI
             AppTheme.StyleSecondaryButton(newButton)
             AddHandler newButton.Click, Sub(sender, e) ClearForm()
 
+            Dim deleteButton = New Button With {.Text = "Hapus", .Dock = DockStyle.Top}
+            AppTheme.StyleSecondaryButton(deleteButton)
+            deleteButton.ForeColor = AppTheme.Danger
+            deleteButton.Visible = AppSession.IsAdmin
+            AddHandler deleteButton.Click, AddressOf DeleteButton_Click
+
             _statusLabel.Dock = DockStyle.Top
             _statusLabel.Height = 48
             _statusLabel.ForeColor = AppTheme.TextMuted
 
             formPanel.Controls.Add(_statusLabel)
+            formPanel.Controls.Add(deleteButton)
+            formPanel.Controls.Add(CreateSpacer(8))
             formPanel.Controls.Add(newButton)
             formPanel.Controls.Add(CreateSpacer(8))
             formPanel.Controls.Add(saveButton)
@@ -211,6 +220,35 @@ Namespace RentalPS.WinForms.UI
             Catch ex As Exception
                 _statusLabel.ForeColor = AppTheme.Danger
                 _statusLabel.Text = "Gagal simpan: " & ex.Message
+            End Try
+        End Sub
+
+        Private Sub DeleteButton_Click(sender As Object, e As EventArgs)
+            If Not AppSession.IsAdmin Then
+                _statusLabel.ForeColor = AppTheme.Danger
+                _statusLabel.Text = "Hanya admin yang boleh hapus data."
+                Return
+            End If
+
+            If _idTextBox.Text.Trim() = "" Then
+                _statusLabel.ForeColor = AppTheme.Danger
+                _statusLabel.Text = "Pilih pelanggan yang mau dihapus."
+                Return
+            End If
+
+            If MessageBox.Show("Hapus pelanggan ini?", "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) <> DialogResult.Yes Then
+                Return
+            End If
+
+            Try
+                _repository.Delete(Long.Parse(_idTextBox.Text))
+                _statusLabel.ForeColor = AppTheme.Success
+                _statusLabel.Text = "Pelanggan berhasil dihapus."
+                ClearForm()
+                LoadCustomers()
+            Catch ex As Exception
+                _statusLabel.ForeColor = AppTheme.Danger
+                _statusLabel.Text = "Gagal hapus: " & ex.Message
             End Try
         End Sub
 

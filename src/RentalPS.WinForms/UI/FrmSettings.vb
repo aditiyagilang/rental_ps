@@ -1,6 +1,7 @@
 Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.Windows.Forms
+Imports RentalPS.WinForms.Infrastructure
 Imports RentalPS.WinForms.Models
 
 Namespace RentalPS.WinForms.UI
@@ -17,7 +18,9 @@ Namespace RentalPS.WinForms.UI
             Dim tabs = New TabControl With {.Dock = DockStyle.Fill}
             tabs.TabPages.Add(CreatePage("Profil Toko", CreateSettingsForm()))
             tabs.TabPages.Add(CreatePage("Metode Pembayaran", CreatePaymentMethodForm()))
-            tabs.TabPages.Add(CreatePage("User", CreateUserForm()))
+            If AppSession.IsAdmin Then
+                tabs.TabPages.Add(CreatePage("User", New FrmUsers()))
+            End If
             Controls.Add(tabs)
         End Sub
 
@@ -59,19 +62,5 @@ Namespace RentalPS.WinForms.UI
             ))
         End Function
 
-        Private Shared Function CreateUserForm() As Form
-            Return New FrmMasterData(New MasterFormConfig(
-                "User",
-                "users",
-                New List(Of MasterField) From {
-                    MasterField.Text("username", "Username", True),
-                    MasterField.Text("password_hash", "Password Hash", True),
-                    MasterField.Text("full_name", "Nama Lengkap", True),
-                    MasterField.BooleanField("is_active", "Aktif")
-                },
-                New List(Of String) From {"username", "full_name"},
-                "username"
-            ))
-        End Function
     End Class
 End Namespace
