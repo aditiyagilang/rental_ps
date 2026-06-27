@@ -2,11 +2,17 @@
 
 Database utama: `rental_ps`
 
-File SQL:
+File SQL utama:
 
-- `database/00_create_database.sql`
-- `database/01_schema.sql`
-- `database/02_seed.sql`
+- `database/00_rental_ps_full.sql`
+
+File ini sudah berisi:
+
+- `CREATE DATABASE`
+- `DROP TABLE`
+- `CREATE TABLE`
+- index
+- seed data untuk semua tabel
 
 Jika memakai `docker-compose.yml` di repo ini, file SQL otomatis dijalankan saat container MySQL pertama kali dibuat.
 
@@ -32,6 +38,20 @@ Jika container sudah pernah dibuat dan ingin menjalankan ulang init SQL dari awa
 ```bash
 docker compose down -v
 docker compose up -d
+```
+
+## Cara Import Dengan Laragon
+
+Lewat HeidiSQL/phpMyAdmin/MySQL client, import file:
+
+```text
+database/00_rental_ps_full.sql
+```
+
+Atau lewat terminal MySQL:
+
+```bash
+mysql -u root < database/00_rental_ps_full.sql
 ```
 
 ## Kelompok Tabel

@@ -16,6 +16,14 @@ Aplikasi desktop VB.NET Windows Forms untuk operasional rental PlayStation, book
 docker compose up -d
 ```
 
+SQL utama ada di:
+
+```text
+database/00_rental_ps_full.sql
+```
+
+Untuk Laragon, import file itu saja.
+
 Koneksi default:
 
 ```text
