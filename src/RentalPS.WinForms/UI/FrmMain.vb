@@ -8,6 +8,7 @@ Namespace RentalPS.WinForms.UI
         Private ReadOnly _contentPanel As New Panel()
         Private ReadOnly _titleLabel As New Label()
         Private ReadOnly _username As String
+        Public Property IsLogoutRequested As Boolean
 
         Public Sub New(username As String)
             _username = username
@@ -78,12 +79,21 @@ Namespace RentalPS.WinForms.UI
 
             Dim userLabel = New Label With {
                 .Dock = DockStyle.Right,
-                .Width = 220,
+                .Width = 180,
                 .Text = "User: " & _username,
                 .TextAlign = ContentAlignment.MiddleRight,
                 .ForeColor = AppTheme.TextMuted
             }
 
+            Dim logoutButton = New Button With {
+                .Dock = DockStyle.Right,
+                .Width = 92,
+                .Text = "Logout"
+            }
+            AppTheme.StyleSecondaryButton(logoutButton)
+            AddHandler logoutButton.Click, AddressOf LogoutButton_Click
+
+            header.Controls.Add(logoutButton)
             header.Controls.Add(userLabel)
             header.Controls.Add(_titleLabel)
 
@@ -114,6 +124,13 @@ Namespace RentalPS.WinForms.UI
             AddHandler button.Click, Sub(sender, e) action.Invoke()
             Return button
         End Function
+
+        Private Sub LogoutButton_Click(sender As Object, e As EventArgs)
+            If MessageBox.Show("Logout dari aplikasi?", "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+                IsLogoutRequested = True
+                Close()
+            End If
+        End Sub
 
         Private Sub ShowPage(title As String, page As Form)
             _titleLabel.Text = title

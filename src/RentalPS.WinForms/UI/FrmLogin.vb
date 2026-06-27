@@ -1,6 +1,5 @@
 Imports System.Drawing
 Imports System.Windows.Forms
-Imports RentalPS.WinForms.Infrastructure
 Imports RentalPS.WinForms.Repositories
 
 Namespace RentalPS.WinForms.UI
@@ -64,20 +63,11 @@ Namespace RentalPS.WinForms.UI
             AppTheme.StylePrimaryButton(loginButton)
             AddHandler loginButton.Click, AddressOf LoginButton_Click
 
-            Dim testButton = New Button With {
-                .Text = "Tes Koneksi MySQL",
-                .Dock = DockStyle.Top,
-                .Margin = New Padding(0, 10, 0, 0)
-            }
-            AppTheme.StyleSecondaryButton(testButton)
-            AddHandler testButton.Click, AddressOf TestButton_Click
-
             _statusLabel.Dock = DockStyle.Top
             _statusLabel.Height = 54
             _statusLabel.ForeColor = AppTheme.TextMuted
 
             panel.Controls.Add(_statusLabel)
-            panel.Controls.Add(testButton)
             panel.Controls.Add(loginButton)
             panel.Controls.Add(CreateSpacer(12))
             panel.Controls.Add(_passwordTextBox)
@@ -106,18 +96,6 @@ Namespace RentalPS.WinForms.UI
             Return New Panel With {.Dock = DockStyle.Top, .Height = height}
         End Function
 
-        Private Sub TestButton_Click(sender As Object, e As EventArgs)
-            Try
-                If DatabaseHealth.TestConnection() Then
-                    _statusLabel.ForeColor = AppTheme.Success
-                    _statusLabel.Text = "Koneksi MySQL berhasil."
-                End If
-            Catch ex As Exception
-                _statusLabel.ForeColor = AppTheme.Danger
-                _statusLabel.Text = "Koneksi gagal: " & ex.Message
-            End Try
-        End Sub
-
         Private Sub LoginButton_Click(sender As Object, e As EventArgs)
             Try
                 Dim username = _usernameTextBox.Text.Trim()
@@ -144,7 +122,17 @@ Namespace RentalPS.WinForms.UI
                 Hide()
                 Using mainForm = New FrmMain(username)
                     mainForm.ShowDialog(Me)
+
+                    If mainForm.IsLogoutRequested Then
+                        _passwordTextBox.Clear()
+                        _statusLabel.ForeColor = AppTheme.TextMuted
+                        _statusLabel.Text = "Silakan login kembali."
+                        Show()
+                        _passwordTextBox.Focus()
+                        Return
+                    End If
                 End Using
+
                 Close()
             Catch ex As Exception
                 _statusLabel.ForeColor = AppTheme.Danger
