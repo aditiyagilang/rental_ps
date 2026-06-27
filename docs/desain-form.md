@@ -331,6 +331,7 @@ Efek:
 
 - Stok sparepart bertambah.
 - Masuk ke riwayat stock_movements.
+- Detail item pembelian disimpan di `sparepart_purchase_items`.
 
 ### Jual Sparepart
 
@@ -353,6 +354,7 @@ Efek:
 
 - Stok sparepart berkurang.
 - Masuk ke riwayat stock_movements.
+- Detail item penjualan disimpan di `sparepart_sale_items`.
 
 ### Penjualan FNB
 
@@ -375,6 +377,25 @@ Efek:
 
 - Stok FNB berkurang.
 - Masuk ke riwayat stock_movements.
+- Detail item penjualan disimpan di `fnb_sale_items`.
+
+### Koreksi Stok
+
+Form ini dipakai untuk stok awal, stok opname, barang rusak, selisih hitung, atau koreksi manual.
+
+Field:
+
+- Jenis item: FNB atau sparepart
+- Barang
+- Jenis mutasi: in, out, adjustment
+- Qty
+- Catatan
+
+Efek:
+
+- Jika `in` atau `adjustment`, stok bertambah.
+- Jika `out`, stok berkurang dan tidak boleh melebihi stok tersedia.
+- Semua perubahan dicatat ke `stock_movements`.
 
 ## Laporan
 

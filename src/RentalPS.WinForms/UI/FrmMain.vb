@@ -47,6 +47,7 @@ Namespace RentalPS.WinForms.UI
             sidebar.Controls.Add(CreateMenuButton("Jasa", Sub() ShowPage("Jasa", New FrmServices())))
             sidebar.Controls.Add(CreateMenuButton("Game", Sub() ShowPage("Game", New FrmGames())))
             sidebar.Controls.Add(CreateMenuButton("Stok FNB", Sub() ShowPage("Stok FNB", New FrmFnbItems())))
+            sidebar.Controls.Add(CreateMenuButton("Koreksi Stok", Sub() ShowPage("Koreksi Stok", New FrmStockAdjustment())))
             sidebar.Controls.Add(CreateMenuButton("Ruang", Sub() ShowPage("Ruang", New FrmRooms())))
             sidebar.Controls.Add(CreateMenuButton("Jenis Ruang", Sub() ShowPage("Jenis Ruang", New FrmRoomTypes())))
             sidebar.Controls.Add(CreateMenuButton("Stok PS", Sub() ShowPage("Stok PS", New FrmConsoles())))

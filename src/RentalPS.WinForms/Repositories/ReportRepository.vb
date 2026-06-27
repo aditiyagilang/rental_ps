@@ -82,6 +82,21 @@ SELECT 'Sparepart', code, name, stock_qty, minimum_stock, unit
 FROM spareparts
 WHERE stock_qty <= minimum_stock
 ORDER BY item_type, name"
+                Case "Mutasi Stok"
+                    Return "
+SELECT sm.created_at,
+       sm.item_type,
+       COALESCE(f.name, s.name) AS item_name,
+       sm.movement_type,
+       sm.qty,
+       sm.reference_type,
+       sm.reference_id,
+       sm.notes
+FROM stock_movements sm
+LEFT JOIN fnb_items f ON sm.item_type = 'fnb' AND f.id = sm.item_id
+LEFT JOIN spareparts s ON sm.item_type = 'sparepart' AND s.id = sm.item_id
+WHERE sm.created_at >= @start_date AND sm.created_at < @end_date
+ORDER BY sm.created_at DESC"
                 Case Else
                     Return "
 SELECT payment_no, reference_type, reference_id, amount, paid_at

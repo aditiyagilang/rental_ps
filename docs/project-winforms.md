@@ -62,10 +62,19 @@ Project dibuat agar bisa dipakai di VS Code dan tetap bisa dibuka di Visual Stud
 - Isi Game
 - Service
 - Beli Sparepart
+  - pilih item sparepart, qty, harga beli, subtotal, total.
+  - stok sparepart otomatis bertambah.
 - Jual Sparepart
+  - pilih item sparepart, qty, harga jual, subtotal, total.
+  - stok sparepart otomatis berkurang.
 - Penjualan FNB
+  - pilih item FNB, qty, harga jual, subtotal, total.
+  - stok FNB otomatis berkurang.
+- Koreksi Stok
+  - stok FNB/sparepart bisa ditambah atau dikurangi manual.
+  - semua koreksi masuk ke riwayat `stock_movements`.
 
-Catatan: form transaksi detail item seperti list game, item FNB, dan item sparepart masih tahap berikutnya. Tahap ini sudah bisa menyimpan data transaksi utama/header ke database.
+Catatan: form transaksi detail list game dan sparepart service masih tahap berikutnya. FNB dan sparepart sudah memakai detail item dan update stok.
 
 ## Koneksi MySQL
 
@@ -87,7 +96,7 @@ Bisa dioverride dengan environment variable:
 
 Urutan implementasi yang disarankan:
 
-1. Detail item transaksi FNB/sparepart/game.
+1. Detail list game dan sparepart service.
 2. Auto generate nomor transaksi.
 3. Pembayaran dan cetak struk.
 4. Export/cetak laporan.

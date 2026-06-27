@@ -30,7 +30,7 @@ Namespace RentalPS.WinForms.UI
 
             _reportComboBox.DropDownStyle = ComboBoxStyle.DropDownList
             _reportComboBox.Width = 180
-            _reportComboBox.Items.AddRange(New Object() {"Pendapatan", "Sewa", "Booking", "Service", "Stok Menipis", "Pembayaran"})
+            _reportComboBox.Items.AddRange(New Object() {"Pendapatan", "Sewa", "Booking", "Service", "Stok Menipis", "Mutasi Stok", "Pembayaran"})
             _reportComboBox.SelectedIndex = 0
 
             _startPicker.Format = DateTimePickerFormat.Short
