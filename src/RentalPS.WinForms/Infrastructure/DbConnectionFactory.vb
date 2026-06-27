@@ -13,8 +13,8 @@ Namespace RentalPS.WinForms.Infrastructure
             Dim host = GetValue("RENTAL_PS_DB_HOST", "localhost")
             Dim port = GetValue("RENTAL_PS_DB_PORT", "3306")
             Dim database = GetValue("RENTAL_PS_DB_NAME", "rental_ps")
-            Dim user = GetValue("RENTAL_PS_DB_USER", "rental_user")
-            Dim password = GetValue("RENTAL_PS_DB_PASSWORD", "rental_pass")
+            Dim user = GetValue("RENTAL_PS_DB_USER", "root")
+            Dim password = GetValue("RENTAL_PS_DB_PASSWORD", "")
 
             Return $"Server={host};Port={port};Database={database};User ID={user};Password={password};SslMode=Preferred;Allow User Variables=True;"
         End Function
