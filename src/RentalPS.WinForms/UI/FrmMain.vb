@@ -40,8 +40,8 @@ Namespace RentalPS.WinForms.UI
                 .TextAlign = ContentAlignment.MiddleLeft
             }
 
-            sidebar.Controls.Add(CreateMenuButton("Pengaturan", Sub() ShowPage("Pengaturan", New FrmPlaceholder("Pengaturan"))))
-            sidebar.Controls.Add(CreateMenuButton("Laporan", Sub() ShowPage("Laporan", New FrmPlaceholder("Laporan"))))
+            sidebar.Controls.Add(CreateMenuButton("Pengaturan", Sub() ShowPage("Pengaturan", New FrmSettings())))
+            sidebar.Controls.Add(CreateMenuButton("Laporan", Sub() ShowPage("Laporan", New FrmReports())))
             sidebar.Controls.Add(CreateMenuButton("Supplier", Sub() ShowPage("Supplier", New FrmSuppliers())))
             sidebar.Controls.Add(CreateMenuButton("Sparepart", Sub() ShowPage("Sparepart", New FrmSpareparts())))
             sidebar.Controls.Add(CreateMenuButton("Jasa", Sub() ShowPage("Jasa", New FrmServices())))

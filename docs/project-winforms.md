@@ -30,6 +30,10 @@ Project dibuat agar bisa dipakai di VS Code dan tetap bisa dibuka di Visual Stud
   - grafik pendapatan 7 hari.
   - grafik komposisi transaksi hari ini.
   - grafik risiko operasional.
+- `FrmReports`
+  - laporan pendapatan, sewa, booking, service, stok menipis, dan pembayaran.
+- `FrmSettings`
+  - pengaturan profil toko, metode pembayaran, dan user.
 - `FrmCustomers`
   - contoh master data yang sudah CRUD dasar.
 - `FrmMasterData`
@@ -52,6 +56,7 @@ Project dibuat agar bisa dipakai di VS Code dan tetap bisa dibuka di Visual Stud
 ## Form Transaksi Aktif
 
 - Sewa
+  - durasi, biaya sewa, diskon persen, nominal diskon, dan total dihitung otomatis.
 - Booking
 - Denda
 - Isi Game
@@ -84,9 +89,8 @@ Urutan implementasi yang disarankan:
 
 1. Detail item transaksi FNB/sparepart/game.
 2. Auto generate nomor transaksi.
-3. Perhitungan otomatis total sewa/durasi.
-4. Pembayaran dan cetak struk.
-5. Laporan.
+3. Pembayaran dan cetak struk.
+4. Export/cetak laporan.
 
 ## Catatan Visual Studio Designer
 

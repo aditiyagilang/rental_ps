@@ -160,6 +160,7 @@ Namespace RentalPS.WinForms.UI
             Try
                 Dim table = _repository.Search(_searchTextBox.Text)
                 _grid.DataSource = table
+                GridHeaderHelper.Apply(_grid)
                 _statusLabel.ForeColor = AppTheme.TextMuted
                 _statusLabel.Text = table.Rows.Count.ToString() & " data pelanggan."
             Catch ex As Exception
