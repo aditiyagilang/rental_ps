@@ -306,9 +306,9 @@ Namespace RentalPS.WinForms.UI
         End Sub
 
         Private Sub HideInternalColumns()
-            For Each name In New String() {"id", "booking_id", "customer_id", "room_id", "console_id"}
-                If _grid.Columns.Contains(name) Then
-                    _grid.Columns(name).Visible = False
+            For Each columnName As String In New String() {"id", "booking_id", "customer_id", "room_id", "console_id"}
+                If _grid.Columns.Contains(columnName) Then
+                    _grid.Columns(columnName).Visible = False
                 End If
             Next
         End Sub
