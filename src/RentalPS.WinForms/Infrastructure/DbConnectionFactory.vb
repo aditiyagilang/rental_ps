@@ -1,22 +1,25 @@
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 
 Namespace RentalPS.WinForms.Infrastructure
     Public NotInheritable Class DbConnectionFactory
         Private Sub New()
         End Sub
 
-        Public Shared Function CreateConnection() As MySqlConnection
-            Return New MySqlConnection(GetConnectionString())
+        Public Shared Function CreateConnection() As SqlConnection
+            Return New SqlConnection(GetConnectionString())
         End Function
 
         Public Shared Function GetConnectionString() As String
-            Dim host = GetValue("RENTAL_PS_DB_HOST", "localhost")
-            Dim port = GetValue("RENTAL_PS_DB_PORT", "3306")
+            Dim server = GetValue("RENTAL_PS_DB_SERVER", "localhost\SQLEXPRESS")
             Dim database = GetValue("RENTAL_PS_DB_NAME", "rental_ps")
-            Dim user = GetValue("RENTAL_PS_DB_USER", "root")
+            Dim user = GetValue("RENTAL_PS_DB_USER", "")
             Dim password = GetValue("RENTAL_PS_DB_PASSWORD", "")
 
-            Return $"Server={host};Port={port};Database={database};User ID={user};Password={password};SslMode=Preferred;Allow User Variables=True;"
+            If String.IsNullOrWhiteSpace(user) Then
+                Return $"Server={server};Database={database};Trusted_Connection=True;TrustServerCertificate=True;"
+            End If
+
+            Return $"Server={server};Database={database};User ID={user};Password={password};TrustServerCertificate=True;"
         End Function
 
         Private Shared Function GetValue(name As String, fallback As String) As String

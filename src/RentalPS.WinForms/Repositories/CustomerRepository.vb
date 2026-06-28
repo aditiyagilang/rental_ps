@@ -1,5 +1,5 @@
 Imports System.Data
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 Imports RentalPS.WinForms.Infrastructure
 
 Namespace RentalPS.WinForms.Repositories
@@ -12,15 +12,15 @@ Namespace RentalPS.WinForms.Repositories
 SELECT id, code, name, phone, address, identity_number, notes, is_active, created_at
 FROM customers
 WHERE @keyword = ''
-   OR code LIKE CONCAT('%', @keyword, '%')
-   OR name LIKE CONCAT('%', @keyword, '%')
-   OR phone LIKE CONCAT('%', @keyword, '%')
+   OR code LIKE '%' + @keyword + '%'
+   OR name LIKE '%' + @keyword + '%'
+   OR phone LIKE '%' + @keyword + '%'
 ORDER BY name"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@keyword", keyword.Trim())
 
-                    Using adapter = New MySqlDataAdapter(command)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -37,7 +37,7 @@ ORDER BY name"
 INSERT INTO customers (code, name, phone, address, identity_number, notes)
 VALUES (@code, @name, @phone, @address, @identity_number, @notes)"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@code", code.Trim())
                     command.Parameters.AddWithValue("@name", name.Trim())
                     command.Parameters.AddWithValue("@phone", NullIfBlank(phone))
@@ -64,7 +64,7 @@ SET code = @code,
     is_active = @is_active
 WHERE id = @id"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@id", id)
                     command.Parameters.AddWithValue("@code", code.Trim())
                     command.Parameters.AddWithValue("@name", name.Trim())
@@ -83,7 +83,7 @@ WHERE id = @id"
                 connection.Open()
 
                 Const sql = "DELETE FROM customers WHERE id = @id"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@id", id)
                     command.ExecuteNonQuery()
                 End Using

@@ -1,5 +1,5 @@
 Imports System.Data
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 Imports RentalPS.WinForms.Infrastructure
 
 Namespace RentalPS.WinForms.Repositories
@@ -33,15 +33,15 @@ JOIN customers c ON c.id = r.customer_id
 JOIN rooms rm ON rm.id = r.room_id
 JOIN consoles co ON co.id = r.console_id
 WHERE @keyword = ''
-   OR r.rental_no LIKE CONCAT('%', @keyword, '%')
-   OR c.name LIKE CONCAT('%', @keyword, '%')
-   OR rm.name LIKE CONCAT('%', @keyword, '%')
-   OR co.name LIKE CONCAT('%', @keyword, '%')
+   OR r.rental_no LIKE '%' + @keyword + '%'
+   OR c.name LIKE '%' + @keyword + '%'
+   OR rm.name LIKE '%' + @keyword + '%'
+   OR co.name LIKE '%' + @keyword + '%'
 ORDER BY r.start_time DESC"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@keyword", keyword.Trim())
-                    Using adapter = New MySqlDataAdapter(command)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -54,8 +54,8 @@ ORDER BY r.start_time DESC"
             Using connection = DbConnectionFactory.CreateConnection()
                 connection.Open()
 
-                Using command = New MySqlCommand(sql, connection)
-                    Using adapter = New MySqlDataAdapter(command)
+                Using command = New SqlCommand(sql, connection)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -79,7 +79,7 @@ INSERT INTO rentals (
   @rental_amount, @discount_amount, @total_amount, @paid_amount, @status, @notes
 )"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     AddParameters(command, values)
                     command.ExecuteNonQuery()
                 End Using
@@ -110,7 +110,7 @@ SET rental_no = @rental_no,
     notes = @notes
 WHERE id = @id"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@id", id)
                     AddParameters(command, values)
                     command.ExecuteNonQuery()
@@ -123,14 +123,14 @@ WHERE id = @id"
                 connection.Open()
 
                 Const sql = "DELETE FROM rentals WHERE id = @id"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@id", id)
                     command.ExecuteNonQuery()
                 End Using
             End Using
         End Sub
 
-        Private Shared Sub AddParameters(command As MySqlCommand, values As RentalValues)
+        Private Shared Sub AddParameters(command As SqlCommand, values As RentalValues)
             command.Parameters.AddWithValue("@rental_no", values.RentalNo)
             command.Parameters.AddWithValue("@booking_id", NullIfZero(values.BookingId))
             command.Parameters.AddWithValue("@customer_id", values.CustomerId)

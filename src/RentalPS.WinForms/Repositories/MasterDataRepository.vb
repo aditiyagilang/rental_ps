@@ -1,7 +1,7 @@
 Imports System.Collections.Generic
 Imports System.Data
 Imports System.Text
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 Imports RentalPS.WinForms.Infrastructure
 Imports RentalPS.WinForms.Models
 
@@ -12,10 +12,10 @@ Namespace RentalPS.WinForms.Repositories
                 connection.Open()
 
                 Dim sql = BuildSearchSql(config)
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@keyword", keyword.Trim())
 
-                    Using adapter = New MySqlDataAdapter(command)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -28,8 +28,8 @@ Namespace RentalPS.WinForms.Repositories
             Using connection = DbConnectionFactory.CreateConnection()
                 connection.Open()
 
-                Using command = New MySqlCommand(sql, connection)
-                    Using adapter = New MySqlDataAdapter(command)
+                Using command = New SqlCommand(sql, connection)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -51,7 +51,7 @@ Namespace RentalPS.WinForms.Repositories
                 Next
 
                 Dim sql = $"INSERT INTO {QuoteName(config.TableName)} ({String.Join(", ", columns)}) VALUES ({String.Join(", ", parameters)})"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     AddParameters(command, config, values)
                     command.ExecuteNonQuery()
                 End Using
@@ -68,7 +68,7 @@ Namespace RentalPS.WinForms.Repositories
                 Next
 
                 Dim sql = $"UPDATE {QuoteName(config.TableName)} SET {String.Join(", ", assignments)} WHERE id = @id"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@id", id)
                     AddParameters(command, config, values)
                     command.ExecuteNonQuery()
@@ -81,14 +81,14 @@ Namespace RentalPS.WinForms.Repositories
                 connection.Open()
 
                 Dim sql = $"DELETE FROM {QuoteName(config.TableName)} WHERE id = @id"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@id", id)
                     command.ExecuteNonQuery()
                 End Using
             End Using
         End Sub
 
-        Private Shared Sub AddParameters(command As MySqlCommand, config As MasterFormConfig, values As Dictionary(Of String, Object))
+        Private Shared Sub AddParameters(command As SqlCommand, config As MasterFormConfig, values As Dictionary(Of String, Object))
             For Each field In config.Fields
                 If values.ContainsKey(field.ColumnName) Then
                     command.Parameters.AddWithValue("@" & field.ColumnName, values(field.ColumnName))
@@ -115,7 +115,7 @@ Namespace RentalPS.WinForms.Repositories
                 For Each column In config.SearchColumns
                     builder.Append(" OR ")
                     builder.Append(QuoteName(column))
-                    builder.Append(" LIKE CONCAT('%', @keyword, '%')")
+                    builder.Append(" LIKE '%' + @keyword + '%'")
                 Next
             End If
 
@@ -128,7 +128,7 @@ Namespace RentalPS.WinForms.Repositories
         End Function
 
         Private Shared Function QuoteName(name As String) As String
-            Return "`" & name.Replace("`", "``") & "`"
+            Return "[" & name.Replace("]", "]]") & "]"
         End Function
     End Class
 End Namespace

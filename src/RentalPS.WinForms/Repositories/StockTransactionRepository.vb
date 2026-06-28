@@ -1,6 +1,6 @@
 Imports System.Collections.Generic
 Imports System.Data
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 Imports RentalPS.WinForms.Infrastructure
 Imports RentalPS.WinForms.Models
 
@@ -9,8 +9,8 @@ Namespace RentalPS.WinForms.Repositories
         Public Function LoadLookup(sql As String) As DataTable
             Using connection = DbConnectionFactory.CreateConnection()
                 connection.Open()
-                Using command = New MySqlCommand(sql, connection)
-                    Using adapter = New MySqlDataAdapter(command)
+                Using command = New SqlCommand(sql, connection)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -89,14 +89,14 @@ Namespace RentalPS.WinForms.Repositories
         Private Shared Function Search(tableName As String, numberColumn As String, dateColumn As String, keyword As String) As DataTable
             Using connection = DbConnectionFactory.CreateConnection()
                 connection.Open()
-                Dim sql = $"SELECT * FROM `{tableName}` WHERE @keyword = '' OR `{numberColumn}` LIKE CONCAT('%', @keyword, '%') OR status LIKE CONCAT('%', @keyword, '%') ORDER BY `{dateColumn}` DESC"
+                Dim sql = $"SELECT * FROM [{tableName}] WHERE @keyword = '' OR [{numberColumn}] LIKE '%' + @keyword + '%' OR status LIKE '%' + @keyword + '%' ORDER BY [{dateColumn}] DESC"
                 If tableName = "sparepart_purchases" Then
-                    sql = $"SELECT * FROM `{tableName}` WHERE @keyword = '' OR `{numberColumn}` LIKE CONCAT('%', @keyword, '%') ORDER BY `{dateColumn}` DESC"
+                    sql = $"SELECT * FROM [{tableName}] WHERE @keyword = '' OR [{numberColumn}] LIKE '%' + @keyword + '%' ORDER BY [{dateColumn}] DESC"
                 End If
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@keyword", keyword.Trim())
-                    Using adapter = New MySqlDataAdapter(command)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -105,23 +105,23 @@ Namespace RentalPS.WinForms.Repositories
             End Using
         End Function
 
-        Private Shared Function InsertFnbSale(connection As MySqlConnection, transaction As MySqlTransaction, saleNo As String, customerId As Long?, saleDate As DateTime, total As Decimal, paid As Decimal, status As String, notes As String) As Long
-            Const sql = "INSERT INTO fnb_sales (sale_no, customer_id, sale_date, total_amount, paid_amount, status, notes) VALUES (@no, @customer_id, @date, @total, @paid, @status, @notes)"
+        Private Shared Function InsertFnbSale(connection As SqlConnection, transaction As SqlTransaction, saleNo As String, customerId As Long?, saleDate As DateTime, total As Decimal, paid As Decimal, status As String, notes As String) As Long
+            Const sql = "INSERT INTO fnb_sales (sale_no, customer_id, sale_date, total_amount, paid_amount, status, notes) OUTPUT INSERTED.id VALUES (@no, @customer_id, @date, @total, @paid, @status, @notes)"
             Return InsertHeader(connection, transaction, sql, saleNo, customerId, saleDate, total, paid, status, notes)
         End Function
 
-        Private Shared Function InsertSparepartSale(connection As MySqlConnection, transaction As MySqlTransaction, saleNo As String, customerId As Long?, saleDate As DateTime, total As Decimal, paid As Decimal, status As String, notes As String) As Long
-            Const sql = "INSERT INTO sparepart_sales (sale_no, customer_id, sale_date, total_amount, paid_amount, status, notes) VALUES (@no, @customer_id, @date, @total, @paid, @status, @notes)"
+        Private Shared Function InsertSparepartSale(connection As SqlConnection, transaction As SqlTransaction, saleNo As String, customerId As Long?, saleDate As DateTime, total As Decimal, paid As Decimal, status As String, notes As String) As Long
+            Const sql = "INSERT INTO sparepart_sales (sale_no, customer_id, sale_date, total_amount, paid_amount, status, notes) OUTPUT INSERTED.id VALUES (@no, @customer_id, @date, @total, @paid, @status, @notes)"
             Return InsertHeader(connection, transaction, sql, saleNo, customerId, saleDate, total, paid, status, notes)
         End Function
 
-        Private Shared Function InsertSparepartPurchase(connection As MySqlConnection, transaction As MySqlTransaction, purchaseNo As String, supplierId As Long?, purchaseDate As DateTime, total As Decimal, notes As String) As Long
-            Const sql = "INSERT INTO sparepart_purchases (purchase_no, supplier_id, purchase_date, total_amount, notes) VALUES (@no, @customer_id, @date, @total, @notes)"
+        Private Shared Function InsertSparepartPurchase(connection As SqlConnection, transaction As SqlTransaction, purchaseNo As String, supplierId As Long?, purchaseDate As DateTime, total As Decimal, notes As String) As Long
+            Const sql = "INSERT INTO sparepart_purchases (purchase_no, supplier_id, purchase_date, total_amount, notes) OUTPUT INSERTED.id VALUES (@no, @customer_id, @date, @total, @notes)"
             Return InsertHeader(connection, transaction, sql, purchaseNo, supplierId, purchaseDate, total, 0D, "", notes)
         End Function
 
-        Private Shared Function InsertHeader(connection As MySqlConnection, transaction As MySqlTransaction, sql As String, number As String, partyId As Long?, dateValue As DateTime, total As Decimal, paid As Decimal, status As String, notes As String) As Long
-            Using command = New MySqlCommand(sql, connection, transaction)
+        Private Shared Function InsertHeader(connection As SqlConnection, transaction As SqlTransaction, sql As String, number As String, partyId As Long?, dateValue As DateTime, total As Decimal, paid As Decimal, status As String, notes As String) As Long
+            Using command = New SqlCommand(sql, connection, transaction)
                 command.Parameters.AddWithValue("@no", number.Trim())
                 Dim partyValue As Object = DBNull.Value
                 If partyId.HasValue Then
@@ -141,13 +141,12 @@ Namespace RentalPS.WinForms.Repositories
                     notesValue = notes.Trim()
                 End If
                 command.Parameters.AddWithValue("@notes", notesValue)
-                command.ExecuteNonQuery()
-                Return command.LastInsertedId
+                Return Convert.ToInt64(command.ExecuteScalar())
             End Using
         End Function
 
-        Private Shared Sub ExecuteNonQuery(connection As MySqlConnection, transaction As MySqlTransaction, sql As String, referenceId As Long, item As StockTransactionItem)
-            Using command = New MySqlCommand(sql, connection, transaction)
+        Private Shared Sub ExecuteNonQuery(connection As SqlConnection, transaction As SqlTransaction, sql As String, referenceId As Long, item As StockTransactionItem)
+            Using command = New SqlCommand(sql, connection, transaction)
                 command.Parameters.AddWithValue("@ref_id", referenceId)
                 command.Parameters.AddWithValue("@item_id", item.ItemId)
                 command.Parameters.AddWithValue("@qty", item.Qty)
@@ -157,7 +156,7 @@ Namespace RentalPS.WinForms.Repositories
             End Using
         End Sub
 
-        Private Shared Sub MoveStock(connection As MySqlConnection, transaction As MySqlTransaction, itemType As String, movementType As String, itemId As Long, qty As Integer, referenceType As String, referenceId As Long?, notes As String)
+        Private Shared Sub MoveStock(connection As SqlConnection, transaction As SqlTransaction, itemType As String, movementType As String, itemId As Long, qty As Integer, referenceType As String, referenceId As Long?, notes As String)
             If qty <= 0 Then
                 Throw New InvalidOperationException("Qty stok harus lebih dari 0.")
             End If
@@ -165,12 +164,12 @@ Namespace RentalPS.WinForms.Repositories
             Dim tableName = If(itemType = "fnb", "fnb_items", "spareparts")
             Dim delta = If(movementType = "out", -qty, qty)
 
-            Dim updateSql = $"UPDATE `{tableName}` SET stock_qty = stock_qty + @delta WHERE id = @item_id"
+            Dim updateSql = $"UPDATE [{tableName}] SET stock_qty = stock_qty + @delta WHERE id = @item_id"
             If movementType = "out" Then
                 updateSql &= " AND stock_qty >= @qty"
             End If
 
-            Using command = New MySqlCommand(updateSql, connection, transaction)
+            Using command = New SqlCommand(updateSql, connection, transaction)
                 command.Parameters.AddWithValue("@delta", delta)
                 command.Parameters.AddWithValue("@qty", qty)
                 command.Parameters.AddWithValue("@item_id", itemId)
@@ -180,7 +179,7 @@ Namespace RentalPS.WinForms.Repositories
                 End If
             End Using
 
-            Using command = New MySqlCommand("INSERT INTO stock_movements (item_type, item_id, movement_type, qty, reference_type, reference_id, notes) VALUES (@item_type, @item_id, @movement_type, @qty, @reference_type, @reference_id, @notes)", connection, transaction)
+            Using command = New SqlCommand("INSERT INTO stock_movements (item_type, item_id, movement_type, qty, reference_type, reference_id, notes) VALUES (@item_type, @item_id, @movement_type, @qty, @reference_type, @reference_id, @notes)", connection, transaction)
                 command.Parameters.AddWithValue("@item_type", itemType)
                 command.Parameters.AddWithValue("@item_id", itemId)
                 command.Parameters.AddWithValue("@movement_type", movementType)

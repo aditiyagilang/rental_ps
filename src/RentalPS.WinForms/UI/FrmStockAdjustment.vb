@@ -69,8 +69,8 @@ Namespace RentalPS.WinForms.UI
             End If
 
             Dim sql = If(_itemTypeComboBox.SelectedItem.ToString() = "fnb",
-                         "SELECT id, CONCAT(name, ' | Stok: ', stock_qty) AS name FROM fnb_items WHERE is_active = 1 ORDER BY name",
-                         "SELECT id, CONCAT(name, ' | Stok: ', stock_qty) AS name FROM spareparts WHERE is_active = 1 ORDER BY name")
+                         "SELECT id, name + ' | Stok: ' + CAST(stock_qty AS varchar(20)) AS name FROM fnb_items WHERE is_active = 1 ORDER BY name",
+                         "SELECT id, name + ' | Stok: ' + CAST(stock_qty AS varchar(20)) AS name FROM spareparts WHERE is_active = 1 ORDER BY name")
             _itemComboBox.DataSource = _repository.LoadLookup(sql)
             _itemComboBox.DisplayMember = "name"
             _itemComboBox.ValueMember = "id"

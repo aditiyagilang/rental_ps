@@ -1,5 +1,5 @@
 Imports System.Data
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 Imports RentalPS.WinForms.Infrastructure
 
 Namespace RentalPS.WinForms.Repositories
@@ -9,11 +9,11 @@ Namespace RentalPS.WinForms.Repositories
                 connection.Open()
 
                 Dim sql = GetSql(reportName)
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@start_date", startDate)
                     command.Parameters.AddWithValue("@end_date", endDate.AddDays(1))
 
-                    Using adapter = New MySqlDataAdapter(command)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -28,23 +28,23 @@ Namespace RentalPS.WinForms.Repositories
                     Return "
 SELECT revenue_date, source, reference_no, customer, amount
 FROM (
-  SELECT DATE(r.created_at) AS revenue_date, 'Sewa' AS source, r.rental_no AS reference_no, c.name AS customer, r.paid_amount AS amount
+  SELECT CAST(r.created_at AS date) AS revenue_date, 'Sewa' AS source, r.rental_no AS reference_no, c.name AS customer, r.paid_amount AS amount
   FROM rentals r JOIN customers c ON c.id = r.customer_id
   WHERE r.created_at >= @start_date AND r.created_at < @end_date AND r.status <> 'cancelled'
   UNION ALL
-  SELECT DATE(b.created_at), 'Booking', b.booking_no, c.name, b.deposit_amount
+  SELECT CAST(b.created_at AS date), 'Booking', b.booking_no, c.name, b.deposit_amount
   FROM bookings b JOIN customers c ON c.id = b.customer_id
   WHERE b.created_at >= @start_date AND b.created_at < @end_date AND b.status <> 'cancelled'
   UNION ALL
-  SELECT DATE(f.created_at), 'Denda', f.fine_no, c.name, f.amount
+  SELECT CAST(f.created_at AS date), 'Denda', f.fine_no, c.name, f.amount
   FROM fines f JOIN customers c ON c.id = f.customer_id
   WHERE f.created_at >= @start_date AND f.created_at < @end_date AND f.status = 'paid'
   UNION ALL
-  SELECT DATE(g.received_at), 'Isi Game', g.install_no, c.name, g.total_amount
+  SELECT CAST(g.received_at AS date), 'Isi Game', g.install_no, c.name, g.total_amount
   FROM game_installs g JOIN customers c ON c.id = g.customer_id
   WHERE g.received_at >= @start_date AND g.received_at < @end_date AND g.status <> 'cancelled'
   UNION ALL
-  SELECT DATE(s.received_at), 'Service', s.service_no, c.name, s.total_amount
+  SELECT CAST(s.received_at AS date), 'Service', s.service_no, c.name, s.total_amount
   FROM service_jobs s JOIN customers c ON c.id = s.customer_id
   WHERE s.received_at >= @start_date AND s.received_at < @end_date AND s.status <> 'cancelled'
 ) report

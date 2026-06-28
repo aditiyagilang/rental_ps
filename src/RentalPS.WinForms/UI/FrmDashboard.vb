@@ -142,7 +142,7 @@ Namespace RentalPS.WinForms.UI
         Private Sub LoadMetrics()
             Try
                 _runningRentalLabel.Text = _repository.GetMetric("SELECT COUNT(*) FROM rentals WHERE status = 'running'").ToString()
-                _todayBookingLabel.Text = _repository.GetMetric("SELECT COUNT(*) FROM bookings WHERE DATE(start_time) = CURRENT_DATE() AND status IN ('booked','checked_in')").ToString()
+                _todayBookingLabel.Text = _repository.GetMetric("SELECT COUNT(*) FROM bookings WHERE CAST(start_time AS date) = CAST(GETDATE() AS date) AND status IN ('booked','checked_in')").ToString()
                 _lowStockLabel.Text = _repository.GetMetric("SELECT (SELECT COUNT(*) FROM fnb_items WHERE stock_qty <= minimum_stock) + (SELECT COUNT(*) FROM spareparts WHERE stock_qty <= minimum_stock)").ToString()
                 _revenueLabel.Text = _repository.GetRevenueToday().ToString("N0")
 

@@ -1,4 +1,4 @@
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 Imports RentalPS.WinForms.Infrastructure
 Imports RentalPS.WinForms.Models
 Imports System.Collections.Generic
@@ -9,7 +9,7 @@ Namespace RentalPS.WinForms.Repositories
             Using connection = DbConnectionFactory.CreateConnection()
                 connection.Open()
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     Return Convert.ToInt32(command.ExecuteScalar())
                 End Using
             End Using
@@ -22,16 +22,16 @@ Namespace RentalPS.WinForms.Repositories
                 Const sql = "
 SELECT COALESCE(SUM(total), 0)
 FROM (
-  SELECT paid_amount AS total FROM rentals WHERE DATE(created_at) = CURRENT_DATE() AND status <> 'cancelled'
-  UNION ALL SELECT deposit_amount FROM bookings WHERE DATE(created_at) = CURRENT_DATE() AND status <> 'cancelled'
-  UNION ALL SELECT amount FROM fines WHERE DATE(created_at) = CURRENT_DATE() AND status = 'paid'
-  UNION ALL SELECT total_amount FROM game_installs WHERE DATE(received_at) = CURRENT_DATE() AND status <> 'cancelled'
-  UNION ALL SELECT total_amount FROM service_jobs WHERE DATE(received_at) = CURRENT_DATE() AND status <> 'cancelled'
-  UNION ALL SELECT paid_amount FROM fnb_sales WHERE DATE(sale_date) = CURRENT_DATE() AND status <> 'void'
-  UNION ALL SELECT paid_amount FROM sparepart_sales WHERE DATE(sale_date) = CURRENT_DATE() AND status <> 'void'
-  UNION ALL SELECT amount FROM payments WHERE DATE(paid_at) = CURRENT_DATE()
+  SELECT paid_amount AS total FROM rentals WHERE CAST(created_at AS date) = CAST(GETDATE() AS date) AND status <> 'cancelled'
+  UNION ALL SELECT deposit_amount FROM bookings WHERE CAST(created_at AS date) = CAST(GETDATE() AS date) AND status <> 'cancelled'
+  UNION ALL SELECT amount FROM fines WHERE CAST(created_at AS date) = CAST(GETDATE() AS date) AND status = 'paid'
+  UNION ALL SELECT total_amount FROM game_installs WHERE CAST(received_at AS date) = CAST(GETDATE() AS date) AND status <> 'cancelled'
+  UNION ALL SELECT total_amount FROM service_jobs WHERE CAST(received_at AS date) = CAST(GETDATE() AS date) AND status <> 'cancelled'
+  UNION ALL SELECT paid_amount FROM fnb_sales WHERE CAST(sale_date AS date) = CAST(GETDATE() AS date) AND status <> 'void'
+  UNION ALL SELECT paid_amount FROM sparepart_sales WHERE CAST(sale_date AS date) = CAST(GETDATE() AS date) AND status <> 'void'
+  UNION ALL SELECT amount FROM payments WHERE CAST(paid_at AS date) = CAST(GETDATE() AS date)
 ) revenue"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     Return Convert.ToDecimal(command.ExecuteScalar())
                 End Using
             End Using
@@ -45,19 +45,19 @@ FROM (
                 Const sql = "
 SELECT revenue_date, COALESCE(SUM(total), 0) AS total
 FROM (
-  SELECT DATE(created_at) AS revenue_date, paid_amount AS total FROM rentals WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY) AND status <> 'cancelled'
-  UNION ALL SELECT DATE(created_at), deposit_amount FROM bookings WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY) AND status <> 'cancelled'
-  UNION ALL SELECT DATE(created_at), amount FROM fines WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY) AND status = 'paid'
-  UNION ALL SELECT DATE(received_at), total_amount FROM game_installs WHERE received_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY) AND status <> 'cancelled'
-  UNION ALL SELECT DATE(received_at), total_amount FROM service_jobs WHERE received_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY) AND status <> 'cancelled'
-  UNION ALL SELECT DATE(sale_date), paid_amount FROM fnb_sales WHERE sale_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY) AND status <> 'void'
-  UNION ALL SELECT DATE(sale_date), paid_amount FROM sparepart_sales WHERE sale_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY) AND status <> 'void'
-  UNION ALL SELECT DATE(paid_at), amount FROM payments WHERE paid_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY)
+  SELECT CAST(created_at AS date) AS revenue_date, paid_amount AS total FROM rentals WHERE created_at >= DATEADD(day, -6, CAST(GETDATE() AS date)) AND status <> 'cancelled'
+  UNION ALL SELECT CAST(created_at AS date), deposit_amount FROM bookings WHERE created_at >= DATEADD(day, -6, CAST(GETDATE() AS date)) AND status <> 'cancelled'
+  UNION ALL SELECT CAST(created_at AS date), amount FROM fines WHERE created_at >= DATEADD(day, -6, CAST(GETDATE() AS date)) AND status = 'paid'
+  UNION ALL SELECT CAST(received_at AS date), total_amount FROM game_installs WHERE received_at >= DATEADD(day, -6, CAST(GETDATE() AS date)) AND status <> 'cancelled'
+  UNION ALL SELECT CAST(received_at AS date), total_amount FROM service_jobs WHERE received_at >= DATEADD(day, -6, CAST(GETDATE() AS date)) AND status <> 'cancelled'
+  UNION ALL SELECT CAST(sale_date AS date), paid_amount FROM fnb_sales WHERE sale_date >= DATEADD(day, -6, CAST(GETDATE() AS date)) AND status <> 'void'
+  UNION ALL SELECT CAST(sale_date AS date), paid_amount FROM sparepart_sales WHERE sale_date >= DATEADD(day, -6, CAST(GETDATE() AS date)) AND status <> 'void'
+  UNION ALL SELECT CAST(paid_at AS date), amount FROM payments WHERE paid_at >= DATEADD(day, -6, CAST(GETDATE() AS date))
 ) revenue
 GROUP BY revenue_date
 ORDER BY revenue_date"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     Using reader = command.ExecuteReader()
                         While reader.Read()
                             items.Add(New ChartItem(Convert.ToDateTime(reader("revenue_date")).ToString("dd/MM"), Convert.ToDecimal(reader("total"))))
@@ -75,13 +75,13 @@ ORDER BY revenue_date"
                 connection.Open()
 
                 Const sql = "
-SELECT 'Sewa' AS label, COUNT(*) AS total FROM rentals WHERE DATE(created_at) = CURRENT_DATE()
-UNION ALL SELECT 'Booking', COUNT(*) FROM bookings WHERE DATE(created_at) = CURRENT_DATE()
-UNION ALL SELECT 'Service', COUNT(*) FROM service_jobs WHERE DATE(received_at) = CURRENT_DATE()
-UNION ALL SELECT 'Isi Game', COUNT(*) FROM game_installs WHERE DATE(received_at) = CURRENT_DATE()
-UNION ALL SELECT 'Denda', COUNT(*) FROM fines WHERE DATE(created_at) = CURRENT_DATE()"
+SELECT 'Sewa' AS label, COUNT(*) AS total FROM rentals WHERE CAST(created_at AS date) = CAST(GETDATE() AS date)
+UNION ALL SELECT 'Booking', COUNT(*) FROM bookings WHERE CAST(created_at AS date) = CAST(GETDATE() AS date)
+UNION ALL SELECT 'Service', COUNT(*) FROM service_jobs WHERE CAST(received_at AS date) = CAST(GETDATE() AS date)
+UNION ALL SELECT 'Isi Game', COUNT(*) FROM game_installs WHERE CAST(received_at AS date) = CAST(GETDATE() AS date)
+UNION ALL SELECT 'Denda', COUNT(*) FROM fines WHERE CAST(created_at AS date) = CAST(GETDATE() AS date)"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     Using reader = command.ExecuteReader()
                         While reader.Read()
                             items.Add(New ChartItem(reader("label").ToString(), Convert.ToDecimal(reader("total"))))
@@ -104,7 +104,7 @@ UNION ALL SELECT 'Sparepart Menipis', COUNT(*) FROM spareparts WHERE stock_qty <
 UNION ALL SELECT 'PS Maintenance', COUNT(*) FROM consoles WHERE availability_status = 'maintenance'
 UNION ALL SELECT 'Ruang Maintenance', COUNT(*) FROM rooms WHERE status = 'maintenance'"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     Using reader = command.ExecuteReader()
                         While reader.Read()
                             items.Add(New ChartItem(reader("label").ToString(), Convert.ToDecimal(reader("total"))))

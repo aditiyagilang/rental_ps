@@ -1,4 +1,4 @@
-Imports MySqlConnector
+Imports Microsoft.Data.SqlClient
 Imports RentalPS.WinForms.Infrastructure
 Imports System.Collections.Generic
 Imports System.Data
@@ -10,7 +10,7 @@ Namespace RentalPS.WinForms.Repositories
                 connection.Open()
 
                 Const sql = "SELECT COUNT(*) FROM users WHERE username = @username AND is_active = 1"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@username", username)
                     Return Convert.ToInt32(command.ExecuteScalar()) > 0
                 End Using
@@ -22,7 +22,7 @@ Namespace RentalPS.WinForms.Repositories
                 connection.Open()
 
                 Const sql = "SELECT password_hash FROM users WHERE username = @username AND is_active = 1"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@username", username)
                     Dim result = command.ExecuteScalar()
                     If result Is Nothing OrElse result Is DBNull.Value Then
@@ -52,7 +52,7 @@ WHERE u.username = @username
   AND r.name = @role_name
   AND u.is_active = 1"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@username", username)
                     command.Parameters.AddWithValue("@role_name", roleName)
                     Return Convert.ToInt32(command.ExecuteScalar()) > 0
@@ -69,20 +69,23 @@ SELECT u.id,
        u.username,
        '********' AS password,
        u.full_name,
-       COALESCE(GROUP_CONCAT(r.name ORDER BY r.name SEPARATOR ', '), '') AS roles,
+       COALESCE(STUFF((
+           SELECT ', ' + r2.name
+           FROM user_roles ur2
+           JOIN roles r2 ON r2.id = ur2.role_id
+           WHERE ur2.user_id = u.id
+           ORDER BY r2.name
+           FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 2, ''), '') AS roles,
        u.is_active
 FROM users u
-LEFT JOIN user_roles ur ON ur.user_id = u.id
-LEFT JOIN roles r ON r.id = ur.role_id
 WHERE @keyword = ''
-   OR u.username LIKE CONCAT('%', @keyword, '%')
-   OR u.full_name LIKE CONCAT('%', @keyword, '%')
-GROUP BY u.id, u.username, u.full_name, u.is_active
+   OR u.username LIKE '%' + @keyword + '%'
+   OR u.full_name LIKE '%' + @keyword + '%'
 ORDER BY u.username"
 
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@keyword", keyword.Trim())
-                    Using adapter = New MySqlDataAdapter(command)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -96,8 +99,8 @@ ORDER BY u.username"
                 connection.Open()
 
                 Const sql = "SELECT id, name FROM roles ORDER BY name"
-                Using command = New MySqlCommand(sql, connection)
-                    Using adapter = New MySqlDataAdapter(command)
+                Using command = New SqlCommand(sql, connection)
+                    Using adapter = New SqlDataAdapter(command)
                         Dim table = New DataTable()
                         adapter.Fill(table)
                         Return table
@@ -112,7 +115,7 @@ ORDER BY u.username"
                 connection.Open()
 
                 Const sql = "SELECT role_id FROM user_roles WHERE user_id = @user_id"
-                Using command = New MySqlCommand(sql, connection)
+                Using command = New SqlCommand(sql, connection)
                     command.Parameters.AddWithValue("@user_id", userId)
                     Using reader = command.ExecuteReader()
                         While reader.Read()
@@ -128,14 +131,14 @@ ORDER BY u.username"
             Using connection = DbConnectionFactory.CreateConnection()
                 connection.Open()
                 Using transaction = connection.BeginTransaction()
-                    Const sql = "INSERT INTO users (username, password_hash, full_name, is_active) VALUES (@username, @password_hash, @full_name, @is_active)"
-                    Using command = New MySqlCommand(sql, connection, transaction)
+                    Const sql = "INSERT INTO users (username, password_hash, full_name, is_active) OUTPUT INSERTED.id VALUES (@username, @password_hash, @full_name, @is_active)"
+                    Using command = New SqlCommand(sql, connection, transaction)
                         command.Parameters.AddWithValue("@username", username.Trim())
                         command.Parameters.AddWithValue("@password_hash", password.Trim())
                         command.Parameters.AddWithValue("@full_name", fullName.Trim())
                         command.Parameters.AddWithValue("@is_active", If(isActive, 1, 0))
-                        command.ExecuteNonQuery()
-                        SaveRoles(connection, transaction, command.LastInsertedId, roleIds)
+                        Dim userId = Convert.ToInt64(command.ExecuteScalar())
+                        SaveRoles(connection, transaction, userId, roleIds)
                     End Using
                     transaction.Commit()
                 End Using
@@ -152,7 +155,7 @@ ORDER BY u.username"
                     End If
                     sql &= " WHERE id = @id"
 
-                    Using command = New MySqlCommand(sql, connection, transaction)
+                    Using command = New SqlCommand(sql, connection, transaction)
                         command.Parameters.AddWithValue("@id", id)
                         command.Parameters.AddWithValue("@username", username.Trim())
                         command.Parameters.AddWithValue("@full_name", fullName.Trim())
@@ -163,7 +166,7 @@ ORDER BY u.username"
                         command.ExecuteNonQuery()
                     End Using
 
-                    Using command = New MySqlCommand("DELETE FROM user_roles WHERE user_id = @user_id", connection, transaction)
+                    Using command = New SqlCommand("DELETE FROM user_roles WHERE user_id = @user_id", connection, transaction)
                         command.Parameters.AddWithValue("@user_id", id)
                         command.ExecuteNonQuery()
                     End Using
@@ -177,16 +180,16 @@ ORDER BY u.username"
             Using connection = DbConnectionFactory.CreateConnection()
                 connection.Open()
 
-                Using command = New MySqlCommand("UPDATE users SET is_active = 0 WHERE id = @id", connection)
+                Using command = New SqlCommand("UPDATE users SET is_active = 0 WHERE id = @id", connection)
                     command.Parameters.AddWithValue("@id", id)
                     command.ExecuteNonQuery()
                 End Using
             End Using
         End Sub
 
-        Private Shared Sub SaveRoles(connection As MySqlConnection, transaction As MySqlTransaction, userId As Long, roleIds As IEnumerable(Of Long))
+        Private Shared Sub SaveRoles(connection As SqlConnection, transaction As SqlTransaction, userId As Long, roleIds As IEnumerable(Of Long))
             For Each roleId In roleIds
-                Using command = New MySqlCommand("INSERT INTO user_roles (user_id, role_id) VALUES (@user_id, @role_id)", connection, transaction)
+                Using command = New SqlCommand("INSERT INTO user_roles (user_id, role_id) VALUES (@user_id, @role_id)", connection, transaction)
                     command.Parameters.AddWithValue("@user_id", userId)
                     command.Parameters.AddWithValue("@role_id", roleId)
                     command.ExecuteNonQuery()
